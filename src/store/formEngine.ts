@@ -241,6 +241,32 @@ export function makeFormEngine({
         ),
     );
 
+    const fieldDefinitions: Record<string, FieldDefinition> = {};
+
+    function isFieldVisible(
+        fieldName: string,
+        currentFields: Record<string, Field<FieldValue>>
+    ): boolean {
+        const def = fieldDefinitions[fieldName];
+        if (!def) return false;
+
+        // Hidden inputs are never visible.
+        // Note: remove this when I fix hidden inputs.
+        if (isBasicInputType(def.input) && def.input.hidden) return false;
+
+        // Required fields are always visible
+        if (def.isRequired) return true;
+
+        if (!def.condition) return true;
+
+        const condition = def.condition;
+        const dependencyField = currentFields[condition.dependencyName]
+        if (!dependencyField) return false;
+
+        return valueMeetsCondition(condition, O.toUndefined(dependencyField.value));
+    }
+
+
     // TODO: dependent fields, handle more than just strings
     return {
         subscribe: formStore.subscribe,
@@ -256,9 +282,14 @@ export function makeFormEngine({
         triggerSubmit() {
             formStore.update((form) => ({ ...form, status: "submitted" }));
             const formState = get(formStore);
+            const visibleFields = pipe(
+                formState.fields,
+                R.filterWithIndex((name, _field) => isFieldVisible(name, formState.fields))
+            );
+
             // prettier-ignore
             pipe(
-                formState.fields, 
+                visibleFields, 
                 parseForm, 
                 E.match(setErrors, onSubmit)
             );
@@ -270,6 +301,7 @@ export function makeFormEngine({
         addField(field: FieldDefinition) {
             l.debug("Adding field", field.name);
             const { initField: setField, setValue } = setFormField(field);
+            fieldDefinitions[field.name] = field;
             setField([], field.isRequired ? requiredRule(field.label || field.name) : undefined);
             const fieldStore = derived(formStore, ({ fields }) => fields[field.name]);
             const fieldValueStore: Writable<FieldValue> = {
