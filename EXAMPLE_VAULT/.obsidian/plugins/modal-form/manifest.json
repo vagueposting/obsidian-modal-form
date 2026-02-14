@@ -1,1 +1,11 @@
-../../../../manifest.json
+{
+    "id": "modal-forms-reloaded",
+    "name": "Modal Forms Reloaded",
+    "version": "2.3.3a",
+    "description": "Create and use templates",
+    "minAppVersion": "1.5.0",
+    "author": "danielo515 (edits by vagueposting)",
+    "authorUrl": "https://github.com/danielo515",
+    "helpUrl": "https://silentvoid13.github.io/Templater/",
+    "isDesktopOnly": false
+}

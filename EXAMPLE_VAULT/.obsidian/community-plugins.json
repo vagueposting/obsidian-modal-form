@@ -2,5 +2,7 @@
   "hot-reload",
   "modalforms",
   "dataview",
-  "templater-obsidian"
+  "templater-obsidian",
+  "obsidian42-brat",
+  "modal-forms-reloaded"
 ]
